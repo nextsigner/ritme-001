@@ -1,4 +1,5 @@
 import QtQuick 2.5
+import QtQuick.Dialogs 1.2
 import  "../../../"
 import '../../../Silabas.js' as Sil
 Item {
@@ -10,53 +11,77 @@ Item {
     property bool showFailTools: false
 
     Column{
-        spacing: app.fs
+        spacing: app.fs*0.25
         anchors.centerIn: r
         width: flickableSetSil.width
         height: r.height-app.fs*2
-        Sequencer{}
-        Sequencer{}
-        Sequencer{}
-        Flickable{
-            id: flickableSetSil
-            width: gridSil.width
-            height: gridSil.height+app.fs*2
-            //anchors.centerIn: r
-            contentWidth: gridSil.width
-            contentHeight: gridSil.height
-            Marco{}
-            Grid{
-                id: gridSil
-                columns: 10
-                spacing: app.fs*0.1
-                width:  (columns*widthSil)+(spacing*(columns-1))
-                anchors.horizontalCenter: parent.horizontalCenter
-                property int widthSil: app.fs*3
-                Repeater{
-                    id: repSil
-                    Item{
-                        width: gridSil.widthSil
-                        height: width
-                        property string nom: '-'+modelData
-                        ButtonDp{
-                            anchors.centerIn: parent
-                            text: modelData
-                            //fontColor: parseInt(app.jsonSilabas[modelData][0])===-1?'red':app.c2
-                            //backgroudColor: parseInt(app.jsonSilabas[modelData][0])===-1?'yellow':app.c3
-                            numero: index
-                            clip: false
-                            width: parent.width
-                            height: parent.height
-                            Component.onCompleted: {
-                                if((''+modelData).indexOf('silencio')>=0||modelData===''){
-                                    parent.visible=false
-                                }
+        Row{
+            spacing: app.fs
+            Boton{
+                w:app.fs
+                h:w
+                tp:3
+                d:'Guardar'
+                c:app.c3
+                b:app.c2
+                t:'\uf0c7'
+                onClicking: {
+                    fileDialogSave.visible=true
+                }
+            }
+            Boton{
+                w:app.fs
+                h:w
+                tp:3
+                d:'Abrir'
+                c:app.c3
+                b:app.c2
+                t:'\uf07c'
+                onClicking: {
+                    fileDialogOpen.visible=true
+                }
+            }
+
+        }
+        Column{
+            id: colSeqs
+            width: parent.width
+            //height: app.fs*1.2*children.length
+            Sequencer{}
+            Sequencer{}
+            Sequencer{}
+        }
+        Grid{
+            id: gridSil
+            columns: 10
+            spacing: app.fs*0.1
+            width:  (columns*widthSil)+(spacing*(columns-1))
+            anchors.horizontalCenter: parent.horizontalCenter
+            property int widthSil: app.fs*3
+            Repeater{
+                id: repSil
+                Item{
+                    width: gridSil.widthSil
+                    height: width
+                    property string nom: '-'+modelData
+                    ButtonDp{
+                        anchors.centerIn: parent
+                        text: modelData
+                        tipo: 'percusion'
+                        numero: index
+                        clip: false
+                        width: parent.width
+                        height: parent.height
+                        Component.onCompleted: {
+                            if((''+modelData).indexOf('silencio')>=0||modelData===''){
+                                parent.visible=false
                             }
                         }
                     }
                 }
             }
         }
+
     }
     Timer{
         id: tLoadSils
@@ -74,15 +99,6 @@ Item {
                     console.log('--->'+b.t)
                 }
             }
-        }
-    }
-    Timer{
-        id: tYContent
-        running: false
-        repeat: false
-        interval: 2000
-        onTriggered: {
-            flickableSetSil.contentY=r.uYContent
         }
     }
     Rectangle{
@@ -129,12 +145,64 @@ Item {
         app.keyEventObjectReceiver=r
 
     }
+    FileDialog {
+        id: fileDialogSave
+        selectExisting: false
+        //currentFile: document.source
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        width: r.width
+        height: r.height
+
+        onAccepted: {
+            var fs=''+fileDialogSave.fileUrls[0]
+            var fs2=fs.replace('file://', '')
+            //console.log('Save: '+fs2)
+            var ext=fs2.substring(fs2.length-4, fs2.length)
+            console.log('Save: '+ext)
+            var nfn
+            if(ext==='.json'){
+                nfn=fs2
+            }else{
+                nfn=fs2+'.json'
+            }
+            var data=''
+            data+='{'
+            for(var i=0;i<colSeqs.children.length;i++){
+
+                data+='"item'+i+'" : "'+colSeqs.children[i].sequences+'"'
+                if(i!==colSeqs.children.length-1){
+                    data+=','
+                }
+            }
+            data+='}'
+            unik.setFile(fs2, data)
+        }
+    }
+    FileDialog {
+        id: fileDialogOpen
+        selectExisting: false
+        //currentFile: document.source
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        width: r.width
+        height: r.height
+        onAccepted: {
+            var fs=''+fileDialogOpen.fileUrls[0]
+            var fs2=fs.replace('file://', '')
+            //console.log('fs2:'+fs2)
+            var j=unik.getFile(fs2)
+            console.log('fs2:'+j)
+            var json=JSON.parse(j)
+            for(var i=0;i<Object.keys(json).length;i++){
+                colSeqs.children[i].sequences=json['item'+i]
+            }
+        }
+    }
     function event(event){
-        var pos=teclado.indexOf(event.text)
+        //var pos=teclado.indexOf(event.text)
         //console.log('Evento: '+event.text+' pos='+pos)
         //if (event.text==='q'){
-            //var b=gridSil.children[pos].children[0]
-            //b.play()
+        //var b=gridSil.children[pos].children[0]
+        //b.play()
         //}
     }
 }

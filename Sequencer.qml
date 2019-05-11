@@ -2,19 +2,17 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 import "../../.."
 
-Rectangle {
+Item{
     id: r
     width: parent.width
     height: app.fs*1.2
-    color: app.c3
-    border.width: 2
-    border.color: app.c1
+    clip: true
     property alias sequences: seq.text
     property var arrayNums: []
     onSequencesChanged: {
         var s0=''+sequences.replace(/  /g, ' ').replace(/   /g, ' ')
        var cf='['+s0.substring(s0.length-1, s0.length)+']'
-        console.log(cf)
+        //console.log(cf)
         if(s0.substring(s0.length-1, s0.length)===' '){
             s0=s0.substring(0, s0.length-2)
         }
@@ -22,7 +20,7 @@ Rectangle {
     }
     Row{
         spacing: app.fs*0.5
-        TextInput{
+        TextEdit{
             id: seq
             width: r.width-bp.width-parent.spacing
             height: r.height-app.fs*0.1
@@ -33,13 +31,16 @@ Rectangle {
                 //c1.sequence=text
             }
             Keys.onReturnPressed: r.focus=true
+            anchors.verticalCenter: parent.verticalCenter
+            Marco{padding:app.fs*0.1}
         }
         BotonUX{
             id:bp
-            text: tr.running?'Stop':'Play'
+            text: tr.running || trspace.running?'Stop':'Play'
             fs: app.fs*0.5
             anchors.verticalCenter: parent.verticalCenter
             onClick: {
+                trspace.stop()
                 tr.running=!tr.running
             }
         }
@@ -55,13 +56,27 @@ Rectangle {
                 p++
             }else{
                 p=0
+            }            
+            var dp=''+r.arrayNums[p]
+            if(dp==='.'){
+                stop()
+                trspace.start()
+                return
             }
-            var dp=parseInt(r.arrayNums[p])
-            var b=gridSil.children[dp].children[0]
+            var b=gridSil.children[parseInt(dp)].children[0]
             if(b){
                 b.play()
             }
 
+        }
+    }
+    Timer{
+        id: trspace
+        running: false
+        repeat: false
+        interval: tr.interval
+        onTriggered: {
+            tr.start()
         }
     }
 }
