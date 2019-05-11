@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtQuick.Dialogs 1.2
+import Qt.labs.platform 1.0
 import  "../../../"
 import '../../../Silabas.js' as Sil
 Item {
@@ -17,6 +17,7 @@ Item {
         height: r.height-app.fs*2
         Row{
             spacing: app.fs
+            anchors.horizontalCenter: parent.horizontalCenter
             Boton{
                 w:app.fs
                 h:w
@@ -147,8 +148,8 @@ Item {
     }
     FileDialog {
         id: fileDialogSave
-        selectExisting: false
-        //currentFile: document.source
+        //selectExisting: false
+        currentFile: document.source+'/ejemplo'
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         width: r.width
         height: r.height
@@ -180,7 +181,8 @@ Item {
     }
     FileDialog {
         id: fileDialogOpen
-        selectExisting: false
+
+        //selectExisting: false
         //currentFile: document.source
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         width: r.width
