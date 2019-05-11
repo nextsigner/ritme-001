@@ -7,6 +7,8 @@ Item{
     width: parent.width
     height: app.fs*1.2
     clip: true
+    //focus: true
+    property alias tiseq: seq
     property alias sequences: seq.text
     property var arrayNums: []
     onSequencesChanged: {
@@ -18,6 +20,12 @@ Item{
         }
         arrayNums=s0.split(' ')
     }
+    Rectangle{
+        anchors.fill: r
+        color: app.c1
+        opacity: 0.5
+        visible:!seq.focus
+    }
     Row{
         spacing: app.fs*0.5
         TextEdit{
@@ -27,6 +35,8 @@ Item{
             color: app.c2
             font.pixelSize: app.fs
             //validator: RegExpValidator { regExp: /([0-9]{1}[0-9]? )+/ }
+            //focus: true
+            //onFocusChanged: r.focus=focus
             onTextChanged: {
                 //c1.sequence=text
             }

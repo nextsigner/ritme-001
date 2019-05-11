@@ -1,20 +1,43 @@
 import QtQuick 2.5
 import Qt.labs.platform 1.0
+import Qt.labs.settings 1.0
 import  "../../../"
 import '../../../Silabas.js' as Sil
 Item {
     id: r
     width: app.an
     height: app.al
+    property string sectionName: 'ritme-001'
+
     property string uSilPlayed: ''
     property int uYContent: 0
     property bool showFailTools: false
+    property string currentFile: ''
+
+    onCurrentFileChanged: {
+        ss.uFileName=currentFile
+        //var m0=
+        //txtCurrenFile.text=currentFile
+    }
+
+    Settings{
+        id: ss
+        category: 'cf-'+app.moduleName+'-'+r.sectionName
+        property string uFileName
+        Component.onCompleted: {
+            r.currentFile=uFileName
+            loadData(r.currentFile)
+        }
+    }
 
     Column{
+        id: colCentral
         spacing: app.fs*0.25
         anchors.centerIn: r
         width: flickableSetSil.width
         height: r.height-app.fs*2
+        opacity: 0.0
+        Behavior on opacity{NumberAnimation{duration:250}}
         Row{
             spacing: app.fs
             anchors.horizontalCenter: parent.horizontalCenter
@@ -42,15 +65,20 @@ Item {
                     fileDialogOpen.visible=true
                 }
             }
-
+            Text{
+                id: txtCurrenFile
+                font.pixelSize: app.fs
+                color:app.c1
+                anchors.verticalCenter: parent.verticalCenter
+                text: r.currentFile===''?'Sin tìtulo':currentFile.split('/')[currentFile.split('/').length-1]
+            }
         }
         Column{
             id: colSeqs
             width: parent.width
-            //height: app.fs*1.2*children.length
-            Sequencer{}
-            Sequencer{}
-            Sequencer{}
+            Sequencer{id: seq1;objectName: 's1'}
+            Sequencer{id: seq2;objectName: 's2'}
+            Sequencer{id: seq3;objectName: 's3'}
         }
         Grid{
             id: gridSil
@@ -73,6 +101,19 @@ Item {
                         clip: false
                         width: parent.width
                         height: parent.height
+                        onClicked: {
+                            for(var i=0;i<colSeqs.children.length;i++){
+                                console.log('B: '+i+' '+colSeqs.children[i].tiseq.focus)
+                                console.log('C: '+i+' '+colSeqs.children[i].objectName)
+                                //var s
+                                if(colSeqs.children[i].tiseq.focus){
+                                    colSeqs.children[i].tiseq.insert(colSeqs.children[i].tiseq.cursorPosition, numero+' ')
+                                    break
+                                }
+                                //console.log('S:  '+s.objectName)
+                                //seq.insert(seq.cursorPosition, numero)
+                            }
+                        }
                         Component.onCompleted: {
                             if((''+modelData).indexOf('silencio')>=0||modelData===''){
                                 parent.visible=false
@@ -90,14 +131,14 @@ Item {
         repeat: true
         interval: 1000
         onTriggered: {
-            console.log('!Cant Sils: '+Sil.silabas.length)
+            //console.log('!Cant Sils: '+Sil.silabas.length)
             if(app.arraySilabas.length!==0){
                 repSil.model=app.arraySilabas
                 stop()
                 for(var i=0;i<r.teclado.length;i++){
                     var b=gridSil.children[i].children[0]
                     b.t=r.teclado[i]
-                    console.log('--->'+b.t)
+                    //console.log('--->'+b.t)
                 }
             }
         }
@@ -114,7 +155,7 @@ Item {
         Behavior on opacity{NumberAnimation{duration:2000}}
         onOpacityChanged: {
             if(opacity===0.0){
-                tYContent.start()
+                colCentral.opacity=1.0
             }
         }
         Text{
@@ -148,28 +189,16 @@ Item {
     }
     FileDialog {
         id: fileDialogSave
-        //selectExisting: false
-        currentFile: document.source+'/ejemplo'
+        currentFile: r.currentFile
+        fileMode: FileDialog.SaveFile
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-        width: r.width
-        height: r.height
-
         onAccepted: {
-            var fs=''+fileDialogSave.fileUrls[0]
+            var fs=''+fileDialogSave.files[0]
             var fs2=fs.replace('file://', '')
-            //console.log('Save: '+fs2)
-            var ext=fs2.substring(fs2.length-4, fs2.length)
-            console.log('Save: '+ext)
-            var nfn
-            if(ext==='.json'){
-                nfn=fs2
-            }else{
-                nfn=fs2+'.json'
-            }
+             r.currentFile=fs2
             var data=''
             data+='{'
             for(var i=0;i<colSeqs.children.length;i++){
-
                 data+='"item'+i+'" : "'+colSeqs.children[i].sequences+'"'
                 if(i!==colSeqs.children.length-1){
                     data+=','
@@ -181,30 +210,26 @@ Item {
     }
     FileDialog {
         id: fileDialogOpen
-
-        //selectExisting: false
-        //currentFile: document.source
+        currentFile: r.currentFile
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-        width: r.width
-        height: r.height
         onAccepted: {
-            var fs=''+fileDialogOpen.fileUrls[0]
+            var fs=''+fileDialogOpen.files[0]
             var fs2=fs.replace('file://', '')
-            //console.log('fs2:'+fs2)
-            var j=unik.getFile(fs2)
-            console.log('fs2:'+j)
-            var json=JSON.parse(j)
-            for(var i=0;i<Object.keys(json).length;i++){
-                colSeqs.children[i].sequences=json['item'+i]
-            }
+            loadData(fs2)
         }
     }
-    function event(event){
-        //var pos=teclado.indexOf(event.text)
-        //console.log('Evento: '+event.text+' pos='+pos)
-        //if (event.text==='q'){
-        //var b=gridSil.children[pos].children[0]
-        //b.play()
-        //}
+    function loadData(f){
+        var j=unik.getFile(f)
+        var json
+        try {
+            json=JSON.parse(j);
+            r.currentFile=f
+        } catch(e) {
+            console.log(e)
+
+        }
+        for(var i=0;i<Object.keys(json).length;i++){
+            colSeqs.children[i].sequences=json['item'+i]
+        }
     }
 }
