@@ -103,15 +103,10 @@ Item {
                         height: parent.height
                         onClicked: {
                             for(var i=0;i<colSeqs.children.length;i++){
-                                console.log('B: '+i+' '+colSeqs.children[i].tiseq.focus)
-                                console.log('C: '+i+' '+colSeqs.children[i].objectName)
-                                //var s
                                 if(colSeqs.children[i].tiseq.focus){
                                     colSeqs.children[i].tiseq.insert(colSeqs.children[i].tiseq.cursorPosition, numero+' ')
                                     break
                                 }
-                                //console.log('S:  '+s.objectName)
-                                //seq.insert(seq.cursorPosition, numero)
                             }
                         }
                         Component.onCompleted: {
