@@ -12,17 +12,51 @@ Item{
     property alias tiseq: seq
     property alias sequences: seq.text
     property var arrayNums: []
+    property var arrayIntervals: []
     onSequencesChanged: {
-        var s0=''+sequences.replace(/  /g, ' ').replace(/   /g, ' ')
+        //tr.stop()
+        arrayNums=[]
+        arrayIntervals=[]
+        var m0=sequences.split(' ')
+        for(var i=0;i<m0.length;i++){
+            var o=m0[i].split(':')
+            if(o.length===2){
+                var ms=100
+                if(parseInt(o[0])>=100){
+                    ms=o[0]
+                }
+                tr.p=0
+                tr.interval=ms
+                if(o[1].indexOf('*')>0){
+                    var m1=o[1].split('*')
+                    for(var i2=0;i2<parseInt(m1[1]);i2++){
+                        arrayNums.push(m1[0])
+                        arrayIntervals.push(ms)
+                    }
+                }else{
+                    arrayNums.push(o[1])
+                    arrayIntervals.push(ms)
+                }
+
+            }
+        }
+        /*var s0=''+sequences.replace(/  /g, ' ').replace(/   /g, ' ')
        var cf='['+s0.substring(s0.length-1, s0.length)+']'
         //console.log(cf)
         if(s0.substring(s0.length-1, s0.length)===' '){
             s0=s0.substring(0, s0.length-2)
         }
-        arrayNums=s0.split(' ')
-    }    
+        arrayNums=s0.split(' ')*/
+    }
     Row{
         spacing: app.fs*0.5
+        /*SpinBox{
+            id: sb
+            from: 150
+            to: 2000
+            value: 250
+            width: app.fs*3
+        }*/
         TextEdit{
             id: seq
             width: r.width-bp.width-parent.spacing
@@ -45,6 +79,25 @@ Item{
                     opacity: 0.5
                     visible:!seq.focus
                 }
+                Rectangle{
+                    id: ran
+                    width: 0
+                    height: parent.height
+                    color: 'red'
+                    SequentialAnimation{
+                        id: anSeqNum
+                        running: false
+
+                        NumberAnimation {
+                            target:ran
+                            property: "width"
+                            duration: tr.interval
+                            easing.type: Easing.InOutQuad
+                            from: ran.parent.width
+                            to:0
+                        }
+                    }
+                }
             }
 
         }
@@ -59,7 +112,6 @@ Item{
             tp: 1
             anchors.verticalCenter: parent.verticalCenter
             onClicking: {
-                trspace.stop()
                 r.silence=!r.silence
             }
             Text{
@@ -77,32 +129,30 @@ Item{
         repeat: true
         interval: 160
         property int p: 0
+        property int nextInterval: 0
         onTriggered: {
             if(tr.p<r.arrayNums.length-1){
                 p++
             }else{
                 p=0
-            }            
+            }
             var dp=''+r.arrayNums[p]
-            if(dp==='.'){
-                stop()
-                trspace.start()
+            tr.interval=parseInt(r.arrayIntervals[p])
+            var b
+            try {
+                b=gridSil.children[parseInt(dp-1)].children[0]
+            } catch(e) {
                 return
             }
-            var b=gridSil.children[parseInt(dp)].children[0]
             if(b){
+                anSeqNum.start()
                 b.play()
             }
+            /*tr.interval=nextInterval
+            if(p>0){
+                tr.nextInterval=parseInt(r.arrayIntervals[p])
+            }*/
 
-        }
-    }
-    Timer{
-        id: trspace
-        running: false
-        repeat: false
-        interval: tr.interval
-        onTriggered: {
-            tr.start()
         }
     }
 }
