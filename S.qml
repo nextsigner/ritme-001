@@ -9,6 +9,7 @@ Item {
     height: app.al
     property string sectionName: 'ritme-001'
 
+    property bool playing: false
     property string uSilPlayed: ''
     property int uYContent: 0
     property bool showFailTools: false
@@ -73,12 +74,32 @@ Item {
                 text: r.currentFile===''?'Sin tìtulo':currentFile.split('/')[currentFile.split('/').length-1]
             }
         }
-        Column{
-            id: colSeqs
+        Row{
             width: parent.width
-            Sequencer{id: seq1;objectName: 's1'}
-            Sequencer{id: seq2;objectName: 's2'}
-            Sequencer{id: seq3;objectName: 's3'}
+            spacing: app.fs*0.5
+            Column{
+                id: colSeqs
+                width: parent.width-colControls.width-app.fs*0.5
+                Sequencer{id: seq1;playing: r.playing;objectName: 's1'}
+                Sequencer{id: seq2;playing: r.playing;objectName: 's2'}
+                Sequencer{id: seq3;playing: r.playing;objectName: 's3'}
+            }
+            Column{
+                id: colControls
+                width: app.fs*6
+                Boton{
+                    t:r.playing?'\uf04d':'\uf04b'
+                    w:app.fs
+                    h:w
+                    c: app.c1
+                    b: app.c3
+                    d: r.playing?'Stop':'Play'
+                    tp: 0
+                    onClicking: {
+                       r.playing=!r.playing
+                    }
+                }
+            }
         }
         Grid{
             id: gridSil
@@ -190,7 +211,7 @@ Item {
         onAccepted: {
             var fs=''+fileDialogSave.files[0]
             var fs2=fs.replace('file://', '')
-             r.currentFile=fs2
+            r.currentFile=fs2
             var data=''
             data+='{'
             for(var i=0;i<colSeqs.children.length;i++){

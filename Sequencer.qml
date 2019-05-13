@@ -7,7 +7,8 @@ Item{
     width: parent.width
     height: app.fs*1.2
     clip: true
-    //focus: true
+    property bool playing: false
+    property bool silence: false
     property alias tiseq: seq
     property alias sequences: seq.text
     property var arrayNums: []
@@ -19,13 +20,7 @@ Item{
             s0=s0.substring(0, s0.length-2)
         }
         arrayNums=s0.split(' ')
-    }
-    Rectangle{
-        anchors.fill: r
-        color: app.c1
-        opacity: 0.5
-        visible:!seq.focus
-    }
+    }    
     Row{
         spacing: app.fs*0.5
         TextEdit{
@@ -42,22 +37,43 @@ Item{
             }
             Keys.onReturnPressed: r.focus=true
             anchors.verticalCenter: parent.verticalCenter
-            Marco{padding:app.fs*0.1}
+            Marco{
+                padding:app.fs*0.1
+                Rectangle{
+                    anchors.fill: parent
+                    color: app.c1
+                    opacity: 0.5
+                    visible:!seq.focus
+                }
+            }
+
         }
-        BotonUX{
+        Boton{
             id:bp
-            text: tr.running || trspace.running?'Stop':'Play'
-            fs: app.fs*0.5
+            t: '\uf026'
+            w:app.fs
+            h:w
+            c: app.c1
+            b: app.c3
+            d: r.silence?'Sound':'Mute'
+            tp: 1
             anchors.verticalCenter: parent.verticalCenter
-            onClick: {
+            onClicking: {
                 trspace.stop()
-                tr.running=!tr.running
+                r.silence=!r.silence
+            }
+            Text{
+                text: '<b>X</b>'
+                font.pixelSize: parent.w*0.8
+                color: 'red'
+                anchors.centerIn: parent
+                visible: r.silence
             }
         }
     }
     Timer{
         id: tr
-        running: false
+        running: r.playing && !r.silence
         repeat: true
         interval: 160
         property int p: 0
