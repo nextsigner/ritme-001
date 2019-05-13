@@ -118,7 +118,7 @@ Item {
                         anchors.centerIn: parent
                         text: modelData
                         tipo: 'percusion'
-                        numero: index
+                        numero: index+1
                         clip: false
                         width: parent.width
                         height: parent.height
