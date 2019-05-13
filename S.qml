@@ -35,7 +35,7 @@ Item {
         id: colCentral
         spacing: app.fs*0.25
         anchors.centerIn: r
-        width: flickableSetSil.width
+        width: gridSil.width
         height: r.height-app.fs*2
         opacity: 0.0
         Behavior on opacity{NumberAnimation{duration:250}}
