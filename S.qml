@@ -8,6 +8,7 @@ Item {
     width: app.an
     height: app.al
     property string sectionName: 'ritme-001'
+    property int area: 0
 
     property bool playing: false
     property string uSilPlayed: ''
@@ -66,37 +67,105 @@ Item {
                     fileDialogOpen.visible=true
                 }
             }
-            Text{
+            UText{
                 id: txtCurrenFile
                 font.pixelSize: app.fs
                 color:app.c1
                 anchors.verticalCenter: parent.verticalCenter
                 text: r.currentFile===''?'Sin tìtulo':currentFile.split('/')[currentFile.split('/').length-1]
             }
+            Item{width: app.fs*2; height: 1}
+            BotonUX{
+                id: botPlay
+                text: 'Editor'
+                fontColor: app.c2
+                fontSize: app.fs*0.5
+                backgroudColor: app.c3
+                speed: 100
+                clip: false
+                opacity: r.area===0?1.0:0.65
+                onClicked: {
+                    r.area=0
+                }
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            BotonUX{
+                text: 'Drumpad'
+                fontSize: app.fs*0.5
+                fontColor: app.c2
+                backgroudColor: app.c3
+                speed: 100
+                clip: false
+                opacity: r.area===1?1.0:0.65
+                onClicked: {
+                    r.area=1
+                }
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
-        Row{
+        Column{
             width: parent.width
             spacing: app.fs*0.5
-            Column{
-                id: colSeqs
-                width: parent.width-colControls.width-app.fs*0.5
-                Sequencer{id: seq1;playing: r.playing;objectName: 's1'}
-                Sequencer{id: seq2;playing: r.playing;objectName: 's2'}
-                Sequencer{id: seq3;playing: r.playing;objectName: 's3'}
+            Item{
+                width: parent.width
+                height: app.fs*14
+                clip: true
+                Marco{padding: 1}
+                TextInput{
+                    id: tiEditor
+                    width: parent.width-app.fs
+                    height: parent.height-app.fs
+                    font.pixelSize: app.fs
+                    color: app.c1
+                    anchors.centerIn: parent
+                    wrapMode: Text.WordWrap
+                    property var val:  RegExpValidator { regExp: /((((([0-9*]){4}:{1}([0-9]){2})\*{1}(([0-9]){2}) )?)(((([0-9]){2} )+)|((([0-9]){1} )+)))+/}
+                    validator: val
+                    Keys.onReturnPressed: seq1.sequences=text
+                    //validator: RegExpValidator { regExp: /((((([0-9*]){4}:{1}([0-9]){2})\*{1}(([0-9]){2}) )?)(((([0-9]){2} )+)|((([0-9]){1} )+)))+/}
+                    onTextChanged: {
+                        //tiEditor.validator=val
+                    }
+                }
             }
-            Column{
-                id: colControls
-                width: app.fs*6
-                Boton{
-                    t:r.playing?'\uf04d':'\uf04b'
-                    w:app.fs
-                    h:w
-                    c: app.c1
-                    b: app.c3
-                    d: r.playing?'Stop':'Play'
-                    tp: 0
-                    onClicking: {
-                       r.playing=!r.playing
+            Row{
+                width: parent.width
+                spacing: app.fs*0.5
+                visible: r.area===0
+                Column{
+                    id: colSeqs
+                    width: parent.width-colControls.width-app.fs*0.5
+                    Sequencer{
+                        id: seq1;
+                        playing: r.playing;
+                        objectName: 's1';
+                        onSelected: {
+
+                            //tiEditor.text='1111:31*21 '
+                            tiEditor.text=sequences
+                            tiEditor.cursorPosition=0
+                            tiEditor.validator= tiEditor.val
+                            tiEditor.cursorPosition=0
+                            //tiEditor.cursorPosition=sequences.length-1
+                        }
+                    }
+                    Sequencer{id: seq2;playing: r.playing;objectName: 's2';onSelected: tiEditor.text=sequences}
+                    Sequencer{id: seq3;playing: r.playing;objectName: 's3';onSelected: tiEditor.text=sequences}
+                }
+                Column{
+                    id: colControls
+                    width: app.fs*6
+                    Boton{
+                        t:r.playing?'\uf04d':'\uf04b'
+                        w:app.fs
+                        h:w
+                        c: app.c1
+                        b: app.c3
+                        d: r.playing?'Stop':'Play'
+                        tp: 0
+                        onClicking: {
+                            r.playing=!r.playing
+                        }
                     }
                 }
             }
@@ -107,6 +176,7 @@ Item {
             spacing: app.fs*0.1
             width:  (columns*widthSil)+(spacing*(columns-1))
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: r.area===1
             property int widthSil: app.fs*3
             Repeater{
                 id: repSil
@@ -174,7 +244,7 @@ Item {
                 colCentral.opacity=1.0
             }
         }
-        Text{
+        UText{
             id: txtLoadingSils
             text: 'Cargando audios..'
             color: app.c2
@@ -182,26 +252,10 @@ Item {
             anchors.centerIn: parent
         }
     }
-    BotonUX{
-        id: botPlay
-        text: 'Hablar'
-        fontColor: app.c2
-        backgroudColor: app.c3
-        speed: 100
-        clip: false
-        onClick: {
-            ms.arrayWord=['yo', 'soy', '|', 'el', '|', 'rro', 'bot', '|', 'con', '|', 'la', '|', 'voz', '|', 'de', '|', 'rri', 'car', 'do']
-            ms.playSil(ms.arrayWord[0])
-        }
-        visible:false
-        anchors.verticalCenter: r.verticalCenter
-    }
-
     property var teclado: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ', 'z', 'x', 'c', 'v', 'n', 'm']
     Component.onCompleted: {
         controles.visible=false
         app.keyEventObjectReceiver=r
-
     }
     FileDialog {
         id: fileDialogSave

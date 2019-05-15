@@ -13,6 +13,7 @@ Item{
     property alias sequences: seq.text
     property var arrayNums: []
     property var arrayIntervals: []
+    signal selected
     onSequencesChanged: {
         //tr.stop()
         arrayNums=[]
@@ -57,7 +58,7 @@ Item{
             value: 250
             width: app.fs*3
         }*/
-        TextEdit{
+        Text{
             id: seq
             width: r.width-bp.width-parent.spacing
             height: r.height-app.fs*0.1
@@ -65,7 +66,11 @@ Item{
             font.pixelSize: app.fs
             //validator: RegExpValidator { regExp: /([0-9]{1}[0-9]? )+/ }
             //focus: true
-            //onFocusChanged: r.focus=focus
+            /*onFocusChanged: {
+                if(focus){
+                    r.selected()
+                }
+            }*///r.focus=focus
             onTextChanged: {
                 //c1.sequence=text
             }
@@ -122,6 +127,10 @@ Item{
                 visible: r.silence
             }
         }
+    }
+    MouseArea{
+        anchors.fill: r
+        onClicked: r.selected()
     }
     Timer{
         id: tr
