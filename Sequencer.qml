@@ -156,11 +156,6 @@ Item{
                 //anSeqNum.start()
                 b.play()
             }
-            /*tr.interval=nextInterval
-            if(p>0){
-                tr.nextInterval=parseInt(r.arrayIntervals[p])
-            }*/
-
         }
     }
 }
