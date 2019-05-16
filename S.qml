@@ -76,7 +76,7 @@ Item {
             }
             Item{width: app.fs*2; height: 1}
             BotonUX{
-                id: botPlay
+                id: botVerEditor
                 text: 'Editor'
                 fontColor: app.c2
                 fontSize: app.fs*0.5
@@ -90,6 +90,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
             }
             BotonUX{
+                id: botVerDrumpad
                 text: 'Drumpad'
                 fontSize: app.fs*0.5
                 fontColor: app.c2
@@ -110,28 +111,63 @@ Item {
                 width: parent.width
                 height: app.fs*14
                 clip: true
+                visible: r.area===0
                 Marco{padding: 1}
                 TextInput{
                     id: tiEditor
                     width: parent.width-app.fs
-                    height: parent.height-app.fs
+                    height: gridSil.height
                     font.pixelSize: app.fs
                     color: app.c1
                     anchors.centerIn: parent
                     wrapMode: Text.WordWrap
-                    property var val:  RegExpValidator { regExp: /((((([0-9*]){4}:{1}([0-9]){2})\*{1}(([0-9]){2}) )?)(((([0-9]){2} )+)|((([0-9]){1} )+)))+/}
-                    validator: val
-                    Keys.onReturnPressed: seq1.sequences=text
-                    //validator: RegExpValidator { regExp: /((((([0-9*]){4}:{1}([0-9]){2})\*{1}(([0-9]){2}) )?)(((([0-9]){2} )+)|((([0-9]){1} )+)))+/}
-                    onTextChanged: {
-                        //tiEditor.validator=val
+                    validator: RegExpValidator { regExp: /((((((([0-9]){3})|(([0-9]){4})):{1}(((([0-9]){1})|(([0-9]){2}))))\*{1}(((([0-9]){1})|(([0-9]){2}))) )?)(((([0-9]){2} )+)|((([0-9]){1} )?)))+/}
+                    property var currentSequencer: seq1
+                    Keys.onReturnPressed: currentSequencer.sequences=text
+                }
+            }
+            Grid{
+                id: gridSil
+                columns: 10
+                spacing: app.fs*0.1
+                width:  (columns*widthSil)+(spacing*(columns-1))
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: r.area===1
+                property int widthSil: app.fs*3
+                Repeater{
+                    id: repSil
+                    Item{
+                        width: gridSil.widthSil
+                        height: width
+                        property string nom: '-'+modelData
+                        ButtonDp{
+                            anchors.centerIn: parent
+                            text: modelData
+                            tipo: 'percusion'
+                            numero: index+1
+                            clip: false
+                            width: parent.width
+                            height: parent.height
+                            onClicked: {
+                                for(var i=0;i<colSeqs.children.length;i++){
+                                    if(colSeqs.children[i].tiseq.focus){
+                                        colSeqs.children[i].tiseq.insert(colSeqs.children[i].tiseq.cursorPosition, numero+' ')
+                                        break
+                                    }
+                                }
+                            }
+                            Component.onCompleted: {
+                                if((''+modelData).indexOf('silencio')>=0||modelData===''){
+                                    parent.visible=false
+                                }
+                            }
+                        }
                     }
                 }
             }
             Row{
                 width: parent.width
                 spacing: app.fs*0.5
-                visible: r.area===0
                 Column{
                     id: colSeqs
                     width: parent.width-colControls.width-app.fs*0.5
@@ -140,17 +176,29 @@ Item {
                         playing: r.playing;
                         objectName: 's1';
                         onSelected: {
-
-                            //tiEditor.text='1111:31*21 '
-                            tiEditor.text=sequences
-                            tiEditor.cursorPosition=0
-                            tiEditor.validator= tiEditor.val
-                            tiEditor.cursorPosition=0
-                            //tiEditor.cursorPosition=sequences.length-1
+                            console.log('1111')
+                            tiEditor.currentSequencer=seq1
+                            tiEditor.text=(''+sequences).replace(/  /g, ' ')
+                            console.log('2222')
                         }
                     }
-                    Sequencer{id: seq2;playing: r.playing;objectName: 's2';onSelected: tiEditor.text=sequences}
-                    Sequencer{id: seq3;playing: r.playing;objectName: 's3';onSelected: tiEditor.text=sequences}
+                    Sequencer{
+                        id: seq2;
+                        playing: r.playing;
+                        objectName: 's2';
+                        onSelected: {
+                            tiEditor.currentSequencer=seq2;
+                            tiEditor.text=sequences
+                        }
+                    }
+                    Sequencer{
+                        id: seq3;
+                        playing: r.playing;
+                        objectName: 's3';
+                        onSelected:{
+                            tiEditor.currentSequencer=seq3;
+                            tiEditor.text=sequences}
+                    }
                 }
                 Column{
                     id: colControls
@@ -169,47 +217,7 @@ Item {
                     }
                 }
             }
-        }
-        Grid{
-            id: gridSil
-            columns: 10
-            spacing: app.fs*0.1
-            width:  (columns*widthSil)+(spacing*(columns-1))
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: r.area===1
-            property int widthSil: app.fs*3
-            Repeater{
-                id: repSil
-                Item{
-                    width: gridSil.widthSil
-                    height: width
-                    property string nom: '-'+modelData
-                    ButtonDp{
-                        anchors.centerIn: parent
-                        text: modelData
-                        tipo: 'percusion'
-                        numero: index+1
-                        clip: false
-                        width: parent.width
-                        height: parent.height
-                        onClicked: {
-                            for(var i=0;i<colSeqs.children.length;i++){
-                                if(colSeqs.children[i].tiseq.focus){
-                                    colSeqs.children[i].tiseq.insert(colSeqs.children[i].tiseq.cursorPosition, numero+' ')
-                                    break
-                                }
-                            }
-                        }
-                        Component.onCompleted: {
-                            if((''+modelData).indexOf('silencio')>=0||modelData===''){
-                                parent.visible=false
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        }        
     }
     Timer{
         id: tLoadSils

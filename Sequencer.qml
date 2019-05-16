@@ -51,13 +51,6 @@ Item{
     }
     Row{
         spacing: app.fs*0.5
-        /*SpinBox{
-            id: sb
-            from: 150
-            to: 2000
-            value: 250
-            width: app.fs*3
-        }*/
         Text{
             id: seq
             width: r.width-bp.width-parent.spacing
@@ -129,8 +122,12 @@ Item{
         }
     }
     MouseArea{
-        anchors.fill: r
-        onClicked: r.selected()
+        width: r.width-bp.width
+        height: r.height
+        anchors.centerIn: r
+        onClicked: {
+            r.selected()
+        }
     }
     Timer{
         id: tr
@@ -146,7 +143,9 @@ Item{
                 p=0
             }
             var dp=''+r.arrayNums[p]
+            tr.stop()
             tr.interval=parseInt(r.arrayIntervals[p])
+            tr.start()
             var b
             try {
                 b=gridSil.children[parseInt(dp-1)].children[0]
@@ -154,7 +153,7 @@ Item{
                 return
             }
             if(b){
-                anSeqNum.start()
+                //anSeqNum.start()
                 b.play()
             }
             /*tr.interval=nextInterval
